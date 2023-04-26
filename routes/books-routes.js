@@ -3,62 +3,54 @@ const router = express.Router()
 const Book = require('../models/Book')
 
 router.route('/')
-    .get((req, res) => {
+    .get((req, res, next) => {
         Book.find()
             .then((books) => res.json(books))
-            .catch(err => console.log(err))
-
-        // try {
-        //     const books = await Book.find()
-        //     res.json(books)
-        // } catch (error) {
-        //     console.log(error)
-        // }
+            .catch(next)
     })
-    .post((req, res) => {
+    .post((req, res, next) => {
         Book.create(req.body)
             .then((book) => {
                 res.status(201).json(book)
             })
-            .catch(err => {
-                res.status(400).json({ error: err.message })
-            })
+            .catch(next)
     })
     .put((req, res) => {
         res.status(405).json({ error: "method not allowed" })
     })
-    .delete((req, res) => {
+    .delete((req, res, next) => {
         Book.deleteMany()
             .then((result) => {
                 res.json(result)
             })
-            .catch(err => console.log(err))
+            .catch(next)
     })
 
 router.route('/:book_id')
-    .get((req, res) => {
+    .get((req, res, next) => {
         Book.findById(req.params.book_id)
             .then((book) => {
+                if (!book) return res.status(404).json({ error: 'book not found' })
                 res.json(book)
-            }).catch(err => console.log(err))
+            }).catch(next)
     })
     .post((req, res) => {
         res.status(405).json({ error: "method not allowed" })
     })
-    .put((req, res) => {
+    .put((req, res, next) => {
         Book.findByIdAndUpdate(
             req.params.book_id,
             { $set: req.body },
             { new: true }
         )
             .then((updated) => res.json(updated))
-            .catch(err => console.log(err))
+            .catch(next)
     })
-    .delete((req, res) => {
+    .delete((req, res, next) => {
         Book.findByIdAndDelete(req.params.book_id)
             .then((reply) => {
-                res.json(reply)
-            }).catch(err => console.log(err))
+                res.status(204).end()
+            }).catch(next)
     })
 module.exports = router
 

@@ -10,11 +10,29 @@ mongoose.connect('mongodb://127.0.0.1:27017/c30-b')
 
 app.use(express.json())
 
+
+
 app.get('/', (req, res) => {
     res.send('Hello world')
 })
 
 app.use('/books', books_routes)
+
+// Error Handling middleware
+app.use((err, req, res, next) => {
+    console.error(err)
+    if (err.name === 'CastError') {
+        res.status(400)
+    } else if (err.name == 'ValidationError') {
+        res.status(400)
+    }
+    res.json({ error: err.message })
+})
+
+// Unknown Path handling middleware
+app.use((req, res) => {
+    res.status(404).json({ error: 'path not found' })
+})
 
 app.listen(3001, () => {
     console.log('server is running on port 3001')
