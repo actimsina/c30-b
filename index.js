@@ -1,7 +1,9 @@
+require('dotenv').config()
 const express = require('express')
 const mongoose = require('mongoose')
 const books_routes = require('./routes/books-routes')
 const users_routes = require('./routes/users-routes')
+const { verifyUser } = require('./middlewares/auth')
 
 const app = express()
 
@@ -16,8 +18,10 @@ app.use(express.json())
 app.get('/', (req, res) => {
     res.send('Hello world')
 })
+
+// app.use(verifyUser)
 app.use('/users', users_routes)
-app.use('/books', books_routes)
+app.use('/books', verifyUser, books_routes)
 
 // Error Handling middleware
 app.use((err, req, res, next) => {

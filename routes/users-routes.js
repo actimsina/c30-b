@@ -1,7 +1,8 @@
 const express = require('express')
-const User = require('../models/User')
 const bcrypt = require('bcryptjs')
+const jwt = require('jsonwebtoken')
 
+const User = require('../models/User')
 const router = express.Router()
 
 router.post('/register', (req, res, next) => {
@@ -21,6 +22,41 @@ router.post('/register', (req, res, next) => {
                 User.create(user)
                     .then((user) => res.status(201).json(user))
                     .catch(next)
+            })
+        }).catch(next)
+})
+
+router.post('/login', (req, res, next) => {
+    const { username, password } = req.body
+    User.findOne({ username })
+        .then(user => {
+            if (!user) return res
+                .status(401)
+                .json({ error: 'user is not registered' })
+
+            bcrypt.compare(password, user.password, (err, success) => {
+                if (err) return res
+                    .status(500)
+                    .json({ error: err.message })
+
+                if (!success) return res
+                    .status(401)
+                    .json({ error: 'password does not match' })
+                const payload = {
+                    id: user._id,
+                    username: user.username,
+                    fullname: user.fullname
+                }
+
+                jwt.sign(payload,
+                    process.env.SECRET,
+                    { expiresIn: '1d' }, (err, encoded) => {
+                        if (err) res.status(500).json({ error: err.message })
+                        res.json({
+                            username: user.username,
+                            token: encoded
+                        })
+                    })
             })
         }).catch(next)
 })
