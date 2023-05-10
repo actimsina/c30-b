@@ -14,4 +14,9 @@ const verifyUser = (req, res, next) => {
     next()
 }
 
-module.exports = { verifyUser }
+const verifyAdmin = (req, res, next) => {
+    if (req.user.role === 'admin') return next()
+    res.status(403).json({ error: 'you are not authorized' })
+}
+
+module.exports = { verifyUser, verifyAdmin }

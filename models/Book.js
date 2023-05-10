@@ -5,6 +5,10 @@ const reviewSchema = new mongoose.Schema({
         type: String,
         required: true,
         minLength: [10, 'review should be longer than 10 characters']
+    },
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
     }
 })
 
